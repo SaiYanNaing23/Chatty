@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { app, server } from "../src/lib/socket.js"
+import path from "path";
 
 // Routers
 import authRoutes from './routes/auth.routes.js';
@@ -12,6 +13,7 @@ import messageRoutes from './routes/message.routes.js';
 // Configuration
 dotenv.config()
 const PORT = process.env.PORT
+const __dirname = path.resolve();
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors({
@@ -26,6 +28,14 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Routes Definition
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
+
+if(process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, "../client" , "dist", "index.html"));
+    });
+}
 
 
 server.listen(PORT, ()=> {
